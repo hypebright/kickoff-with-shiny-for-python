@@ -1,0 +1,37 @@
+# config.yml — Environment Specification v1
+# Example: Shiny for Python masterclass (AthlyticZ Kick Off)
+
+version: "1"
+
+meta:
+  name: python-shiny-masterclass
+  description: "Kick Off with Shiny for Python"
+  instructor: "Veerle Eeftink - van Leemput"
+  language: [python]
+  tags:
+    - shiny
+    - python
+    - rest-api
+
+system:
+  apt:
+    - build-essential
+    - curl
+    - git
+    - quarto
+  scripts:
+    - scripts/install_uv.sh   # installs the uv package manager
+
+python:
+  version: "3.12"
+  manager: uv
+  sync: true   # runs `uv sync` to install from uv.lock / pyproject.toml
+
+r: null
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
+
+workspace:
+  dir: /home/jovyan/workspace

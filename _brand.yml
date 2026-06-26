@@ -1,0 +1,37 @@
+meta:
+  name: AthlyticZ
+  link: https://athlyticz.com
+
+logo:
+  medium: https://assets.cdn.filesafe.space/CWtGpll4aBGdvhJl0Gg7/media/6837cbb720b24654b6a31bef.png
+
+color:
+  palette:
+    cream: "#FBFAF6"
+    ink: "#04262F"
+    teal: "#178FA0"
+    gold: "#C7BB42"
+    text-soft: "#4a6770"
+    line: "#E5DFD3"
+  background: cream
+  foreground: ink
+  primary: teal
+  secondary: gold
+
+typography:
+  fonts:
+    - family: Fraunces
+      source: google
+      weight: [400, 500]
+      style: [normal, italic]
+    - family: Outfit
+      source: google
+      weight: [400, 500, 600]
+  base:
+    family: Outfit
+    size: 16px
+    line-height: 1.6
+  headings:
+    family: Fraunces
+    weight: 400
+    line-height: 1.08

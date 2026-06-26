@@ -1,0 +1,211 @@
+---
+title: "Kick Off with Shiny for Python"
+subtitle: "AthlyticZ Masterclass &mdash; 3 July 2026"
+author: "Veerle van Leemput"
+format:
+  revealjs:
+    brand: ../_brand.yml
+    theme: default
+    transition: fade
+    highlight-style: github
+    code-line-numbers: false
+    code-block-height: 400px
+    slide-number: true
+    footer: "AthlyticZ — Kick Off with Shiny for Python"
+---
+
+## Python has a lot of app frameworks {.center}
+
+| Framework | Reactivity | Best for |
+|-----------|-----------|----------|
+| **Streamlit** | Reruns top-to-bottom on every interaction | Quick data apps, ML demos |
+| **Dash** | Explicit callback decorators linking inputs to outputs | Analytical dashboards, Plotly-heavy apps |
+| **Gradio** | Event-driven, limited layout control | ML model demos |
+| **Shiny** | Fine-grained: only what changed reruns | Production apps, complex state |
+
+---
+
+## Why Shiny?
+
+- **Reactive by design** — inputs, outputs, and calculations form a dependency graph. Only what needs to update, updates.
+- **Production-ready** — Posit-backed, Shiny for R has been in production for 10+ years. Python got it in 2022.
+- **Full layout control** — Bootstrap-based UI, cards, sidebars, navbars, theming. Not just widgets stacked vertically.
+- **One framework, two languages** — if you ever touch Shiny for R, you already know 80% of Shiny for Python.
+
+---
+
+## Two ways to write Shiny {.center}
+
+Same reactive engine. Two different styles.
+
+|  | **Core** | **Express** |
+|--|----------|-------------|
+| Structure | Explicit UI + server | Everything at the top level |
+| Layout | Nested function calls | `with` context managers |
+| Outputs | 2 steps: placeholder + render fn | 1 step: render fn places itself |
+| Best for | Larger apps, complex layouts | Quick builds, demos |
+
+This session uses **Core** — easier to see what's happening.
+
+---
+
+## Core: explicit structure
+
+```python
+from shiny import App, ui, render
+
+app_ui = ui.page_fluid(
+    ui.input_text("name", "Your name"),
+    ui.output_text("greeting"),   # step 1: placeholder in UI
+)
+
+def server(input, output, session):
+    @render.text
+    def greeting():               # step 2: render fn in server
+        return f"Hello, {input.name()}!"
+
+app = App(app_ui, server)
+```
+
+Two steps for every output. The wiring is explicit.
+
+---
+
+## Express: less boilerplate
+
+```python
+from shiny.express import input, render, ui
+
+with ui.card():
+    ui.input_text("name", "Your name")
+
+    @render.text
+    def greeting():               # defined once, placed here
+        return f"Hello, {input.name()}!"
+```
+
+No `App()`. No separate server function. The render decorator places the output where you define it.
+
+::: {.callout-note}
+Source: [shiny.posit.co/py/docs/express-vs-core.html](https://shiny.posit.co/py/docs/express-vs-core.html)
+:::
+
+---
+
+## What we're building
+
+A World Cup 2026 group standings dashboard.
+
+- Pick a group (A through L)
+- See the four teams, sorted by points
+- v1: plain, functional
+- v2: branded, polished — same `_brand.yml` that's powering these slides
+
+The app talks to a real REST API with live tournament data.
+
+---
+
+## The API
+
+Base URL: `https://worldcup26.ir`
+
+```
+GET /get/group/?name=A
+Authorization: Bearer <token>
+```
+
+```json
+{
+  "group": "A",
+  "teams": [
+    { "team_id": "1", "pts": "3", "gf": "2", "ga": "0" },
+    { "team_id": "2", "pts": "3", "gf": "1", "ga": "1" },
+    { "team_id": "3", "pts": "0", "gf": "0", "ga": "2" },
+    { "team_id": "4", "pts": "0", "gf": "0", "ga": "1" }
+  ]
+}
+```
+
+Register once, get a token that lasts 84 days. Store it in `.env`.
+
+---
+
+## What is uv?
+
+**uv** is a fast Python package and project manager — one tool that replaces `pip`, `venv`, and `pip-tools`.
+
+- Written in Rust → 10–100× faster than pip
+- Manages virtual environments for you automatically
+- Locks exact dependency versions in `uv.lock`
+- Made by Astral (the folks behind Ruff)
+
+Install it once:
+
+```bash
+pip install uv
+```
+
+---
+
+## Setting up a project with uv
+
+**Initialize the project:**
+
+```bash
+uv init
+```
+
+The first time you run `uv run`, `uv sync`, or `uv lock`, uv also creates:
+
+- `.venv/` — virtual environment in your project root
+- `uv.lock` — lockfile pinning exact versions
+
+**Add your dependencies:**
+
+```bash
+uv add requests pandas shiny
+```
+
+**Lock them:**
+
+```bash
+uv lock
+```
+
+::: {.callout-note}
+In **Positron**, the `!` prefix matters: Console pane (Python interpreter) → `!uv init`, `!uv add …`
+Terminal pane → no `!` needed
+:::
+
+---
+
+## Project setup
+
+Three commands to go from zero to running app:
+
+```bash
+uv init my-app
+cd my-app
+uv add "shiny[theme]" requests pandas python-dotenv
+```
+
+Run the app:
+
+```bash
+shiny run app.py --reload
+```
+
+That's it. `uv` handles the virtual env, the lockfile, everything.
+
+---
+
+## Let's go! {.center}
+
+Open Positron. We're starting from a blank file.
+
+```
+app/
+├── v1_basics.py    ← we build this together
+├── v2_polished.py  ← brand.yml, value_box, styled table
+└── .env            ← your API token goes here
+```

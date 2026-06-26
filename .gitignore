@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Quarto
+/.quarto/
+*_files/
+*.html
+
+# Claude Code
+.claude/settings.local.json
+
+# Build output
+*.zip
