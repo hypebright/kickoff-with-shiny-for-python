@@ -5,9 +5,7 @@ from shiny import App, ui, render, reactive
 BASE_URL = "https://worldcup26.ir"
 GROUPS = [chr(i) for i in range(ord("A"), ord("M"))]  # A through L
 
-theme = (
-    ui.Theme.from_brand(__file__)
-    .add_rules("""
+theme = ui.Theme.from_brand(__file__).add_rules("""
         body { background: #FBFAF6; }
 
         .navbar { border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -50,7 +48,6 @@ theme = (
             border-radius: 2px;
         }
     """)
-)
 
 logo = ui.tags.img(
     src="https://assets.cdn.filesafe.space/CWtGpll4aBGdvhJl0Gg7/media/6837cbb720b24654b6a31bef.png",
@@ -73,7 +70,6 @@ app_ui = ui.page_navbar(
         ui.card(
             ui.output_ui("standings_table"),
         ),
-        class_="p-4",
     ),
     title=logo,
     theme=theme,
@@ -100,18 +96,20 @@ def server(input, output, session):
         rows = []
         for entry in entries:
             team = lookup.get(entry["team_id"], {})
-            rows.append({
-                "name": team.get("name_en", entry["team_id"]),
-                "flag": team.get("flag", ""),
-                "mp": int(entry["mp"]),
-                "w": int(entry["w"]),
-                "d": int(entry["d"]),
-                "l": int(entry["l"]),
-                "gf": int(entry["gf"]),
-                "ga": int(entry["ga"]),
-                "gd": int(entry["gd"]),
-                "pts": int(entry["pts"]),
-            })
+            rows.append(
+                {
+                    "name": team.get("name_en", entry["team_id"]),
+                    "flag": team.get("flag", ""),
+                    "mp": int(entry["mp"]),
+                    "w": int(entry["w"]),
+                    "d": int(entry["d"]),
+                    "l": int(entry["l"]),
+                    "gf": int(entry["gf"]),
+                    "ga": int(entry["ga"]),
+                    "gd": int(entry["gd"]),
+                    "pts": int(entry["pts"]),
+                }
+            )
         return sorted(rows, key=lambda r: (-r["pts"], -r["gd"], -r["gf"]))
 
     @render.ui
@@ -131,7 +129,9 @@ def server(input, output, session):
         rows_html = ""
         for i, row in enumerate(rows):
             gd = f"+{row['gd']}" if row["gd"] > 0 else str(row["gd"])
-            flag = f'<img class="flag" src="{row["flag"]}" alt="">' if row["flag"] else ""
+            flag = (
+                f'<img class="flag" src="{row["flag"]}" alt="">' if row["flag"] else ""
+            )
             rows_html += f"""
             <tr>
                 <td class="rank">{i + 1}</td>
