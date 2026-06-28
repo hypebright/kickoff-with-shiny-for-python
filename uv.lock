@@ -220,7 +220,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "pandas" },
     { name = "requests" },
-    { name = "shiny" },
+    { name = "shiny", extra = ["theme"] },
 ]
 
 [package.metadata]
@@ -229,7 +229,20 @@ requires-dist = [
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pandas", specifier = ">=3.0.3" },
     { name = "requests", specifier = ">=2.34.2" },
-    { name = "shiny", specifier = ">=1.6.3" },
+    { name = "shiny", extras = ["theme"], specifier = ">=1.6.3" },
+]
+
+[[package]]
+name = "libsass"
+version = "0.23.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/79/b4/ab091585eaa77299558e3289ca206846aefc123fb320b5656ab2542c20ad/libsass-0.23.0.tar.gz", hash = "sha256:6f209955ede26684e76912caf329f4ccb57e4a043fd77fe0e7348dd9574f1880", size = 316068, upload-time = "2024-01-06T18:53:05.404Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e5/13/fc1bea1de880ca935137183727c7d4dd921c4128fc08b8ddc3698ba5a8a3/libsass-0.23.0-cp38-abi3-macosx_11_0_x86_64.whl", hash = "sha256:34cae047cbbfc4ffa832a61cbb110f3c95f5471c6170c842d3fed161e40814dc", size = 1086783, upload-time = "2024-01-06T19:02:38.903Z" },
+    { url = "https://files.pythonhosted.org/packages/55/2f/6af938651ff3aec0a0b00742209df1172bc297fa73531f292801693b7315/libsass-0.23.0-cp38-abi3-macosx_14_0_arm64.whl", hash = "sha256:ea97d1b45cdc2fc3590cb9d7b60f1d8915d3ce17a98c1f2d4dd47ee0d9c68ce6", size = 982759, upload-time = "2024-01-06T19:02:41.331Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/5a/eb5b62641df0459a3291fc206cf5bd669c0feed7814dded8edef4ade8512/libsass-0.23.0-cp38-abi3-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:4a218406d605f325d234e4678bd57126a66a88841cb95bee2caeafdc6f138306", size = 9444543, upload-time = "2024-01-06T19:02:43.191Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/fc/275783f5120970d859ae37d04b6a60c13bdec2aa4294b9dfa8a37b5c2513/libsass-0.23.0-cp38-abi3-win32.whl", hash = "sha256:31e86d92a5c7a551df844b72d83fc2b5e50abc6fbbb31e296f7bebd6489ed1b4", size = 775481, upload-time = "2024-01-06T19:02:46.05Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/20/caf3c7cf2432d85263119798c45221ddf67bdd7dae8f626d14ff8db04040/libsass-0.23.0-cp38-abi3-win_amd64.whl", hash = "sha256:a2ec85d819f353cbe807432d7275d653710d12b08ec7ef61c124a580a8352f3c", size = 872914, upload-time = "2024-01-06T19:02:47.61Z" },
 ]
 
 [[package]]
@@ -733,6 +746,12 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f2/4e/73e3d4058356394d385ad997967488c75a3701986f1ab7f6235759a24335/shiny-1.6.3.tar.gz", hash = "sha256:29997e112413be71548725cb4eda64a199e4a5a7814467fa8f438a5cd5bd5619", size = 5128971, upload-time = "2026-06-01T21:52:45.497Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/07/b1/5c56bd1374951b29b5787089d4d6a6d199ce93f796b4ba0072bc23537018/shiny-1.6.3-py3-none-any.whl", hash = "sha256:f1987f6f3883b082d89c298190166ba447d5c04b246a376691da742938116008", size = 3931071, upload-time = "2026-06-01T21:52:43.884Z" },
+]
+
+[package.optional-dependencies]
+theme = [
+    { name = "brand-yml" },
+    { name = "libsass" },
 ]
 
 [[package]]

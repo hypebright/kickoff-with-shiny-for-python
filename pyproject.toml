@@ -9,5 +9,5 @@ dependencies = [
     "jinja2>=3.1.6",
     "pandas>=3.0.3",
     "requests>=2.34.2",
-    "shiny>=1.6.3",
+    "shiny[theme]>=1.6.3",
 ]
