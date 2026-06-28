@@ -1,0 +1,331 @@
+/* ── Pitch surface ───────────────────────────────────────────────────────── */
+
+/*
+ * html carries the base green so that position:fixed children with z-index:-1
+ * still sit above it while remaining below the page content.
+ */
+html { background: #245c29 !important; }
+
+body {
+    background: transparent !important;
+    min-height: 100vh;
+    padding-bottom: 60px;
+}
+
+/*
+ * Mow stripes: alternating light and dark bands, fixed so they don't scroll.
+ */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent          0px,  transparent          76px,
+        rgba(0, 0, 0, 0.10) 76px,  rgba(0, 0, 0, 0.10) 152px
+    );
+}
+
+/* ── Navbar ──────────────────────────────────────────────────────────────── */
+.navbar {
+    background: #04262F !important;
+    border-bottom: none;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.35);
+}
+.navbar .nav-link {
+    color: rgba(245,241,230,0.50) !important;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    padding: 10px 22px !important;
+    transition: color 0.18s;
+    border-bottom: 2px solid transparent;
+}
+.navbar .nav-link:hover  { color: rgba(245,241,230,0.85) !important; }
+.navbar .nav-link.active {
+    color: #f5f1e6 !important;
+    border-bottom-color: #178FA0;
+}
+
+/* ── Tab panes: transparent so the pitch shows through ──────────────────── */
+.tab-content > .tab-pane { padding: 32px 36px; }
+
+/* ── Content panel (floats above the pitch) ─────────────────────────────── */
+.content-panel {
+    background: rgba(251, 250, 246, 0.94);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.55);
+    left: 50%;
+}
+
+/* ── Group stage note (on the pitch, so white text) ─────────────────────── */
+.group-stage-note {
+    color: rgba(255,255,255,0.70);
+    font-size: 13px;
+    font-style: italic;
+    margin-bottom: 22px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+
+/* ── Group cards (float on the pitch) ───────────────────────────────────── */
+.card {
+    background: #FBFAF6 !important;
+    border: 1px solid #E5DFD3 !important;
+    border-radius: 12px !important;
+    overflow: hidden;
+    box-shadow: 0 4px 22px rgba(0,0,0,0.22);
+    transition: box-shadow 0.22s, transform 0.22s;
+}
+.card:hover {
+    box-shadow: 0 8px 36px rgba(0,0,0,0.32);
+    transform: translateY(-3px);
+}
+.card .card-header {
+    background: #04262F !important;
+    color: rgba(245,241,230,0.70);
+    font-family: 'Fraunces', serif;
+    font-size: 0.85rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 11px 18px;
+    border-bottom: none;
+}
+.card-body { padding: 16px 18px; }
+
+.group-winner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #04262F;
+    margin-bottom: 12px;
+}
+.group-winner img { height: 22px; border-radius: 2px; }
+.group-winner .g-pts { font-size: 12px; font-weight: 400; color: #4a6770; margin-left: 2px; }
+
+.group-others { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.group-other-team {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    color: #4a6770;
+}
+.group-other-team img { height: 13px; border-radius: 1px; }
+.group-other-team .g-pts { font-size: 11px; color: #b5c2c7; }
+
+.btn-outline-primary {
+    color: #178FA0 !important;
+    border-color: rgba(23,143,160,0.45) !important;
+    background: transparent !important;
+    font-size: 12px !important;
+    letter-spacing: 0.05em;
+    transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+}
+.btn-outline-primary:hover {
+    background: rgba(23,143,160,0.10) !important;
+    border-color: #178FA0 !important;
+    box-shadow: 0 0 10px rgba(23,143,160,0.22) !important;
+}
+
+/* ── Live – day headings ─────────────────────────────────────────────────── */
+.day-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    font-weight: 400;
+    color: #04262F;
+    margin: 24px 0 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #E5DFD3;
+    text-align: center;
+}
+.day-heading.muted { color: #b0bcbf; border-bottom-color: #e8e4db; }
+.day-heading:first-child { margin-top: 0; }
+
+/* ── Live – match rows ───────────────────────────────────────────────────── */
+.match-row {
+    display: flex;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid #f0ede6;
+    transition: background 0.15s;
+}
+.match-row:hover { background: rgba(23,143,160,0.05); }
+.match-row.muted { opacity: 0.38; }
+
+.match-team {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #04262F;
+}
+.match-team.home { justify-content: flex-end; padding-right: 20px; }
+.match-team.away { padding-left: 20px; }
+.match-team img  { height: 19px; border-radius: 2px; flex-shrink: 0; }
+
+.match-center {
+    width: 110px;
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: #04262F;
+    flex-shrink: 0;
+}
+.match-center.upcoming {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    color: #8aa5ad;
+}
+.match-center.live-now { color: #c0392b; animation: live-pulse 2s ease-in-out infinite; }
+@keyframes live-pulse { 0%,100% { opacity:1; } 50% { opacity:0.65; } }
+
+.match-meta {
+    width: 80px;
+    text-align: right;
+    font-size: 10px;
+    font-weight: 500;
+    color: #b5c2c7;
+    text-transform: uppercase;
+    letter-spacing: 0.11em;
+    flex-shrink: 0;
+}
+.no-matches { font-size: 14px; color: #c5cfd3; font-style: italic; padding: 10px 0; }
+.tz-note { font-size: 11px; color: #b5c2c7; font-style: italic; margin-top: 18px; margin-bottom: 0; text-align: center; }
+
+/* ── Schedule ────────────────────────────────────────────────────────────── */
+.phase-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: #04262F;
+    margin: 0 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #E5DFD3;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Outfit', sans-serif;
+    table-layout: fixed;
+}
+.schedule-table thead th:nth-child(1) { width: 16%; }
+.schedule-table thead th:nth-child(2) { width: 29%; }
+.schedule-table thead th:nth-child(3) { width: 12%; }
+.schedule-table thead th:nth-child(4) { width: 29%; }
+.schedule-table thead th:nth-child(5) { width: 14%; }
+.schedule-table thead th {
+    background: #04262F;
+    color: rgba(245,241,230,0.55);
+    padding: 9px 14px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    text-align: left;
+}
+.schedule-table thead th:first-child { border-radius: 6px 0 0 0; }
+.schedule-table thead th:last-child  { border-radius: 0 6px 0 0; }
+.schedule-table thead th.h-right  { text-align: right; }
+.schedule-table thead th.h-center { text-align: center; }
+.schedule-table tbody tr { border-bottom: 1px solid #E5DFD3; transition: background 0.12s; }
+.schedule-table tbody tr:hover { background: #F5F2EB; }
+.schedule-table td { padding: 10px 14px; font-size: 14px; color: #04262F; }
+.schedule-table td.t-date  { color: #4a6770; font-size: 12px; white-space: nowrap; }
+.schedule-table td.t-home  { text-align: right; font-weight: 500; }
+.schedule-table td.t-home img,
+.schedule-table td.t-away img { height: 15px; border-radius: 1px; vertical-align: middle; }
+.schedule-table td.t-score {
+    text-align: center;
+    font-weight: 700;
+    font-family: 'Fraunces', serif;
+    color: #178FA0;
+    font-size: 1rem;
+}
+.schedule-table td.t-score.t-vs {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    color: #c5cfd3;
+    font-size: 13px;
+}
+.schedule-table td.t-away { font-weight: 500; }
+.schedule-table td.t-ctx {
+    color: #b5c2c7;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    white-space: nowrap;
+}
+
+/* ── Standings modal ─────────────────────────────────────────────────────── */
+.standings-table { width: 100%; border-collapse: collapse; font-family: 'Outfit', sans-serif; }
+.standings-table thead th {
+    background: #04262F;
+    color: rgba(245,241,230,0.55);
+    padding: 10px 14px;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: left;
+}
+.standings-table thead th:first-child { border-radius: 6px 0 0 0; }
+.standings-table thead th:last-child  { border-radius: 0 6px 0 0; }
+.standings-table thead th.h-center { text-align: center; }
+.standings-table tbody tr { border-bottom: 1px solid #E5DFD3; transition: background 0.12s; }
+.standings-table tbody tr:hover { background: #F5F2EB; }
+.standings-table td { padding: 11px 14px; font-size: 14px; color: #04262F; }
+.standings-table td.t-rank { color: #4a6770; font-size: 12px; width: 32px; }
+.standings-table td.t-team { font-weight: 500; }
+.standings-table td.t-team img { height: 17px; margin-right: 8px; vertical-align: middle; border-radius: 2px; }
+.standings-table td.t-pts  { font-weight: 700; color: #178FA0; text-align: center; }
+.standings-table td.t-gd   { color: #4a6770; text-align: center; }
+.standings-table td.t-num  { text-align: center; }
+
+/* ── App footer bar ──────────────────────────────────────────────────────── */
+.app-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    background: rgba(4, 38, 47, 0.92);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 7px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.app-footer .footer-api {
+    font-size: 10px;
+    color: rgba(245,241,230,0.35);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.app-footer .footer-promo {
+    font-size: 11px;
+    color: rgba(245,241,230,0.55);
+    text-align: right;
+}
+.app-footer a {
+    color: #178FA0;
+    text-decoration: none;
+}
+.app-footer a:hover { color: #f5f1e6; }
