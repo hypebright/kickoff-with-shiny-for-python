@@ -1,17 +1,44 @@
 ---
 title: "Kick Off with Shiny for Python"
 subtitle: "AthlyticZ Masterclass &mdash; 3 July 2026"
-author: "Veerle van Leemput"
+author: "Veerle Eeftink - van Leemput"
 format:
   revealjs:
-    brand: ../_brand.yml
-    theme: default
+    theme:
+      - default
+      - brand
+      - custom.scss
+    center: false
     transition: fade
     highlight-style: github
     code-line-numbers: false
     code-block-height: 400px
     slide-number: true
-    footer: "AthlyticZ — Kick Off with Shiny for Python"
+    footer: "Kick Off with Shiny for Python"
+---
+
+## Why are we still here? {.center}
+
+It's 2026. Claude exists. GitHub Copilot exists.
+
+. . .
+
+**So why spend a day learning Shiny from scratch? 😅**
+
+---
+
+## LLMs are your pair programmer
+
+You can't validate what Claude is producing if you have no foundational knowledge.
+
+- Claude catches syntax, but **you** catch architecture
+- Claude writes fast, but **you** know what's actually possible
+- Claude tends to overshoot, but **you** know how to simplify
+. . .
+
+> The goal isn't to write every line yourself.
+> The goal is to **know enough to steer**.
+
 ---
 
 ## Python has a lot of app frameworks {.center}
@@ -27,10 +54,10 @@ format:
 
 ## Why Shiny?
 
-- **Reactive by design** — inputs, outputs, and calculations form a dependency graph. Only what needs to update, updates.
-- **Production-ready** — Posit-backed, Shiny for R has been in production for 10+ years. Python got it in 2022.
-- **Full layout control** — Bootstrap-based UI, cards, sidebars, navbars, theming. Not just widgets stacked vertically.
-- **One framework, two languages** — if you ever touch Shiny for R, you already know 80% of Shiny for Python.
+- **Reactive by design**: inputs, outputs, and calculations form a dependency graph. Only what needs to update, updates.
+- **Production-ready**: Posit-backed, Shiny for R has been in production for 10+ years. Python got it in 2022.
+- **Full layout control**: Bootstrap-based UI, cards, sidebars, navbars, theming. Not just widgets stacked vertically.
+- **One framework, two languages**: if you ever touched Shiny for R, you already know 80% of Shiny for Python.
 
 ---
 
@@ -45,7 +72,7 @@ Same reactive engine. Two different styles.
 | Outputs | 2 steps: placeholder + render fn | 1 step: render fn places itself |
 | Best for | Larger apps, complex layouts | Quick builds, demos |
 
-This session uses **Core** — easier to see what's happening.
+We'll be using **Core** .
 
 ---
 
@@ -66,9 +93,6 @@ def server(input, output, session):
 
 app = App(app_ui, server)
 ```
-
-Two steps for every output. The wiring is explicit.
-
 ---
 
 ## Express: less boilerplate
@@ -92,43 +116,11 @@ Source: [shiny.posit.co/py/docs/express-vs-core.html](https://shiny.posit.co/py/
 
 ---
 
-## What we're building
+## Python... Eh...
 
-A World Cup 2026 group standings dashboard.
+Yes yes, I'm an R person. Perhaps you are too.
 
-- Pick a group (A through L)
-- See the four teams, sorted by points
-- v1: plain, functional
-- v2: branded, polished — same `_brand.yml` that's powering these slides
-
-The app talks to a real REST API with live tournament data.
-
----
-
-## The API
-
-Base URL: `https://worldcup26.ir`
-
-```
-GET /get/group/?name=A
-Authorization: Bearer <token>
-```
-
-```json
-{
-  "group": "A",
-  "teams": [
-    { "team_id": "1", "pts": "3", "gf": "2", "ga": "0" },
-    { "team_id": "2", "pts": "3", "gf": "1", "ga": "1" },
-    { "team_id": "3", "pts": "0", "gf": "0", "ga": "2" },
-    { "team_id": "4", "pts": "0", "gf": "0", "ga": "1" }
-  ]
-}
-```
-
-Register once, get a token that lasts 84 days. Store it in `.env`.
-
----
+So let's start with setting up our Python project.
 
 ## What is uv?
 
@@ -157,13 +149,17 @@ uv init
 
 The first time you run `uv run`, `uv sync`, or `uv lock`, uv also creates:
 
-- `.venv/` — virtual environment in your project root
-- `uv.lock` — lockfile pinning exact versions
+- `.venv/`: virtual environment in your project root
+- `uv.lock`: lockfile pinning exact versions
+
+---
+
+## Managing your dependencies
 
 **Add your dependencies:**
 
 ```bash
-uv add requests pandas shiny
+uv add requests shiny
 ```
 
 **Lock them:**
@@ -186,26 +182,84 @@ Three commands to go from zero to running app:
 ```bash
 uv init my-app
 cd my-app
-uv add "shiny[theme]" requests pandas python-dotenv
+uv add shiny requests
 ```
 
 Run the app:
 
 ```bash
-shiny run app.py --reload
+shiny run app.py --reload --launch-browser
 ```
 
 That's it. `uv` handles the virtual env, the lockfile, everything.
 
 ---
 
+## What we're building
+
+A World Cup 2026 dashboard! ⚽
+
+| Tab | What it shows |
+|-----|---------------|
+| **Live** | Yesterday / today / tomorrow matches, live scores |
+| **Groups** | All 12 groups, with results (group phase has ended) |
+| **Schedule** | Every past and upcoming match |
+
+- `basic.py`: plain, functional, no styling
+- `polished.py`: branded with `_brand.yml`, custom CSS, and a nice background
+
+---
+
+## The API
+
+Base URL: `https://worldcup26.ir`
+
+```
+GET /get/teams   → all 48 teams, names + flag URLs
+GET /get/groups  → standings for all 12 groups
+GET /get/games   → every match, scores, phase, date
+```
+
+No auth required & fully open source.
+
+```python
+import requests
+
+resp = requests.get("https://worldcup26.ir/get/groups")
+data = resp.json()   # {"groups": [{"name": "A", "teams": [...]}]}
+```
+
+---
+
+## reactive.calc: cache your data
+
+`@reactive.calc` is like `@render`, but it **caches its result** and only re-runs when its inputs change.
+
+```python
+@reactive.calc
+def all_groups():
+    resp = requests.get(f"{BASE_URL}/get/groups")
+    resp.raise_for_status()
+    return {g["name"]: g["teams"] for g in resp.json()["groups"]}
+```
+
+Call it like a function anywhere in the server. It fetches once, then serves the cached result to every output that needs it.
+
+::: {.callout-note}
+Without `reactive.calc`, the same API call would fire separately for every output that uses the data.
+:::
+
+---
+
 ## Let's go! {.center}
 
-Open Positron. We're starting from a blank file.
+Open Positron (or another IDE). We're starting from a blank file.
 
 ```
 app/
-├── v1_basics.py    ← we build this together
-├── v2_polished.py  ← brand.yml, value_box, styled table
-└── .env            ← your API token goes here
+├── basic.py      ← we build this together
+├── polished.py   ← brand.yml, custom CSS, pitch background
+└── _brand.yml    ← shared with these slides
 ```
+
+You can check everything on GitHub: hypebright/kickoff-with-shiny-for-python

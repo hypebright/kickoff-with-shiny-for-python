@@ -1,0 +1,104 @@
+/*-- scss:defaults --*/
+$body-bg: #FBFAF6;
+$body-color: #04262F;
+$headings-color: #04262F;
+$link-color: #178FA0;
+$code-color: #178FA0;
+$border-color: #E5DFD3;
+
+/*-- scss:rules --*/
+
+// ── Background ────────────────────────────────────────────────────────────────
+.reveal,
+.reveal .slides,
+.reveal .backgrounds {
+  background-color: #FBFAF6;
+}
+
+// ── Headings ──────────────────────────────────────────────────────────────────
+.reveal h2 {
+  color: #04262F;
+  padding-bottom: 0.25em;
+  border-bottom: 2px solid #178FA0;
+  margin-bottom: 0.6em;
+}
+
+.reveal h3 {
+  color: #4a6770;
+}
+
+// Bold text pops in teal
+.reveal strong {
+  color: #178FA0;
+}
+
+// ── Tables ────────────────────────────────────────────────────────────────────
+.reveal table {
+  font-size: 0.82em;
+  border-collapse: collapse;
+}
+
+.reveal table thead th {
+  background: #04262F;
+  color: #FBFAF6;
+  border: none;
+  padding: 10px 14px;
+}
+
+.reveal table tbody td {
+  border-color: #E5DFD3;
+  padding: 8px 14px;
+}
+
+.reveal table tbody tr:nth-child(even) {
+  background: rgba(4, 38, 47, 0.04);
+}
+
+// ── Code blocks ───────────────────────────────────────────────────────────────
+.reveal pre {
+  background: #F0EDE7;
+  border: 1px solid #E5DFD3;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+// ── Blockquotes ───────────────────────────────────────────────────────────────
+.reveal blockquote {
+  border: none;
+  border-left: 3px solid #178FA0;
+  padding: 0.5em 1em;
+  background: rgba(23, 143, 160, 0.07);
+  border-radius: 0 6px 6px 0;
+  font-style: normal;
+  box-shadow: none;
+  width: 95%;
+  color: #04262F;
+}
+
+// ── Callout notes ─────────────────────────────────────────────────────────────
+div.callout-note {
+  border-color: #178FA0 !important;
+  background: rgba(23, 143, 160, 0.06) !important;
+}
+
+div.callout-note .callout-title {
+  background: rgba(23, 143, 160, 0.14) !important;
+  color: #04262F !important;
+}
+
+// ── Footer & slide number ─────────────────────────────────────────────────────
+.reveal .footer {
+  color: #4a6770;
+  font-size: 0.6em;
+}
+
+.reveal .slide-number {
+  color: #4a6770;
+  background-color: transparent;
+  font-size: 0.6em;
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────────
+.reveal .controls {
+  color: #178FA0;
+}
