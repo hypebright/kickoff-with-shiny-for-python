@@ -11,10 +11,27 @@ groups endpoint only knows team ids, not team names, so we have to use the
 teams lookup from Step 3 to fill in the names and flags.
 """
 
+import json
+import os
 import requests
+from pathlib import Path
 from shiny import App, ui, render, reactive
 
 BASE_URL = "https://worldcup26.ir"
+
+# The live API can go down. Set WC_USE_FIXTURES=1 before running this file
+# and it'll read from the placeholder JSON in app/fixtures/ instead.
+USE_FIXTURES = os.environ.get("WC_USE_FIXTURES", "0") == "1"
+FIXTURES_DIR = Path(__file__).parent.parent / "app" / "fixtures"
+
+
+def fetch(endpoint):
+    if USE_FIXTURES:
+        return json.loads((FIXTURES_DIR / f"{endpoint}.json").read_text())
+    resp = requests.get(f"{BASE_URL}/get/{endpoint}")
+    resp.raise_for_status()
+    return resp.json()
+
 
 # chr(i) converts a number into the corresponding letter (chr(65) -> "A").
 # ord("A") is 65 and ord("M") is 77, so this builds the list
@@ -42,9 +59,7 @@ app_ui = ui.page_navbar(
 def server(input, output, session):
     @reactive.calc
     def all_teams():
-        resp = requests.get(f"{BASE_URL}/get/teams")
-        resp.raise_for_status()
-        return {t["id"]: t for t in resp.json()["teams"]}
+        return {t["id"]: t for t in fetch("teams")["teams"]}
 
     # Same pattern as all_teams(), but using a different endpoint (groups). The
     # /get/groups response looks something like:
@@ -60,9 +75,7 @@ def server(input, output, session):
     # simply with a group lettter.
     @reactive.calc
     def all_groups():
-        resp = requests.get(f"{BASE_URL}/get/groups")
-        resp.raise_for_status()
-        return {g["name"]: g["teams"] for g in resp.json()["groups"]}
+        return {g["name"]: g["teams"] for g in fetch("groups")["groups"]}
 
     @render.text
     def team_count():

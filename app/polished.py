@@ -1,10 +1,27 @@
+import json
+import os
 import requests
 from datetime import datetime, date, timedelta
-from shiny import App, ui, render, reactive
 from pathlib import Path
+from shiny import App, ui, render, reactive
 
 BASE_URL = "https://worldcup26.ir"
 GROUPS = [chr(i) for i in range(ord("A"), ord("M"))]  # A through L
+
+# Flip this on (or set WC_USE_FIXTURES=1 before running) to use the bundled
+# placeholder data in app/fixtures/ instead of the live API
+# API is DOWN
+USE_FIXTURES = os.environ.get("WC_USE_FIXTURES", "0") == "1"
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+def fetch(endpoint):
+    if USE_FIXTURES:
+        return json.loads((FIXTURES_DIR / f"{endpoint}.json").read_text())
+    resp = requests.get(f"{BASE_URL}/get/{endpoint}")
+    resp.raise_for_status()
+    return resp.json()
+
 
 PHASE_ORDER = {"group": 1, "r32": 2, "r16": 3, "qf": 4, "sf": 5, "third": 6, "final": 7}
 PHASE_LABELS = {
@@ -48,7 +65,11 @@ footer_bar = ui.tags.footer(
     ),
     ui.tags.span(
         "Want to build more like this? Choose the AthlyticZ membership — ",
-        ui.tags.a("athlyticz.com/masterclass", href="https://athlyticz.com/masterclass", target="_blank"),
+        ui.tags.a(
+            "athlyticz.com/masterclass",
+            href="https://athlyticz.com/masterclass",
+            target="_blank",
+        ),
         class_="footer-promo",
     ),
     class_="app-footer",
@@ -72,21 +93,15 @@ def server(input, output, session):
 
     @reactive.calc
     def all_teams():
-        resp = requests.get(f"{BASE_URL}/get/teams")
-        resp.raise_for_status()
-        return {t["id"]: t for t in resp.json()["teams"]}
+        return {t["id"]: t for t in fetch("teams")["teams"]}
 
     @reactive.calc
     def all_groups():
-        resp = requests.get(f"{BASE_URL}/get/groups")
-        resp.raise_for_status()
-        return {g["name"]: g["teams"] for g in resp.json()["groups"]}
+        return {g["name"]: g["teams"] for g in fetch("groups")["groups"]}
 
     @reactive.calc
     def all_games():
-        resp = requests.get(f"{BASE_URL}/get/games")
-        resp.raise_for_status()
-        return resp.json()["games"]
+        return fetch("games")["games"]
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 

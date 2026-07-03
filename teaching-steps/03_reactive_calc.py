@@ -10,10 +10,27 @@ Instead we introduce @reactive.calc to fetch once and share the
 result between the two outputs.
 """
 
+import json
+import os
 import requests
+from pathlib import Path
 from shiny import App, ui, render, reactive
 
 BASE_URL = "https://worldcup26.ir"
+
+# The live API can go down. Set WC_USE_FIXTURES=1 before running this file
+# and it'll read from the placeholder JSON in app/fixtures/ instead.
+USE_FIXTURES = os.environ.get("WC_USE_FIXTURES", "0") == "1"
+FIXTURES_DIR = Path(__file__).parent.parent / "app" / "fixtures"
+
+
+def fetch(endpoint):
+    if USE_FIXTURES:
+        return json.loads((FIXTURES_DIR / f"{endpoint}.json").read_text())
+    resp = requests.get(f"{BASE_URL}/get/{endpoint}")
+    resp.raise_for_status()
+    return resp.json()
+
 
 app_ui = ui.page_navbar(
     ui.nav_panel(
@@ -42,12 +59,9 @@ def server(input, output, session):
     # same URL twice.
     @reactive.calc
     def all_teams():
-        resp = requests.get(f"{BASE_URL}/get/teams")
-        resp.raise_for_status()
-
         # Previously we kept resp.json()["teams"] as a list. Here we turn
         # it into a dict instead, with the team's id as a key:
-        #   {t["id"]: t for t in resp.json()["teams"]}
+        #   {t["id"]: t for t in fetch("teams")["teams"]}
         # It basically means: "loop over every
         # team t in the list, and for each one, store t itself under the
         # key t['id']". The result looks something like this:
@@ -56,7 +70,7 @@ def server(input, output, session):
         # by id often ("who is team 7?"). Turning the list into
         # a dict once means every later lookup is instant (all_teams()[id])
         # instead of looping through the whole list each time.
-        return {t["id"]: t for t in resp.json()["teams"]}
+        return {t["id"]: t for t in fetch("teams")["teams"]}
 
     @render.text
     def team_count():

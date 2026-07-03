@@ -9,12 +9,28 @@ strings into useable datetime objects so we can sort by them, and grouping
 matches into sections by tournament phase (Group Stage, Round of 16, etc).
 """
 
+import json
+import os
 import requests
 from datetime import datetime
+from pathlib import Path
 from shiny import App, ui, render, reactive
 
 BASE_URL = "https://worldcup26.ir"
 GROUPS = [chr(i) for i in range(ord("A"), ord("M"))]  # A through L
+
+# The live API can go down. Set WC_USE_FIXTURES=1 before running this file
+# and it'll read from the placeholder JSON in app/fixtures/ instead.
+USE_FIXTURES = os.environ.get("WC_USE_FIXTURES", "0") == "1"
+FIXTURES_DIR = Path(__file__).parent.parent / "app" / "fixtures"
+
+
+def fetch(endpoint):
+    if USE_FIXTURES:
+        return json.loads((FIXTURES_DIR / f"{endpoint}.json").read_text())
+    resp = requests.get(f"{BASE_URL}/get/{endpoint}")
+    resp.raise_for_status()
+    return resp.json()
 
 # The API uses codes for each phase ("group", "r16", "final", ...).
 # PHASE_ORDER gives each code a rank so we can sort phases in the order they're played
@@ -45,25 +61,19 @@ app_ui = ui.page_navbar(
 def server(input, output, session):
     @reactive.calc
     def all_teams():
-        resp = requests.get(f"{BASE_URL}/get/teams")
-        resp.raise_for_status()
-        return {t["id"]: t for t in resp.json()["teams"]}
+        return {t["id"]: t for t in fetch("teams")["teams"]}
 
     @reactive.calc
     def all_groups():
-        resp = requests.get(f"{BASE_URL}/get/groups")
-        resp.raise_for_status()
-        return {g["name"]: g["teams"] for g in resp.json()["groups"]}
+        return {g["name"]: g["teams"] for g in fetch("groups")["groups"]}
 
     # Same pattern as calcs above, this time for every match in the
     # tournament. Unlike teams/groups we keep this one as a plain list
-    # (resp.json()["games"]), and not a dict, because there's no key we
+    # (fetch("games")["games"]), and not a dict, because there's no key we
     # want to look games up by. For this data it's simply about sorting and filtering.
     @reactive.calc
     def all_games():
-        resp = requests.get(f"{BASE_URL}/get/games")
-        resp.raise_for_status()
-        return resp.json()["games"]
+        return fetch("games")["games"]
 
     def parse_dt(game):
         # The API gives dates as plain strings, e.g. "07/03/2026 20:00".

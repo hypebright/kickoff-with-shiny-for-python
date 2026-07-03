@@ -1,9 +1,27 @@
+import json
+import os
 import requests
 from datetime import datetime, date, timedelta
+from pathlib import Path
 from shiny import App, ui, render, reactive
 
 BASE_URL = "https://worldcup26.ir"
 GROUPS = [chr(i) for i in range(ord("A"), ord("M"))]  # A through L
+
+# Flip this on (or set WC_USE_FIXTURES=1 before running) to use the bundled
+# placeholder data in app/fixtures/ instead of the live API
+# API is DOWN
+USE_FIXTURES = os.environ.get("WC_USE_FIXTURES", "0") == "1"
+FIXTURES_DIR = Path(__file__).parent / "fixtures"
+
+
+def fetch(endpoint):
+    if USE_FIXTURES:
+        return json.loads((FIXTURES_DIR / f"{endpoint}.json").read_text())
+    resp = requests.get(f"{BASE_URL}/get/{endpoint}")
+    resp.raise_for_status()
+    return resp.json()
+
 
 PHASE_ORDER = {"group": 1, "r32": 2, "r16": 3, "qf": 4, "sf": 5, "third": 6, "final": 7}
 PHASE_LABELS = {
@@ -27,21 +45,15 @@ app_ui = ui.page_navbar(
 def server(input, output, session):
     @reactive.calc
     def all_teams():
-        resp = requests.get(f"{BASE_URL}/get/teams")
-        resp.raise_for_status()
-        return {t["id"]: t for t in resp.json()["teams"]}
+        return {t["id"]: t for t in fetch("teams")["teams"]}
 
     @reactive.calc
     def all_groups():
-        resp = requests.get(f"{BASE_URL}/get/groups")
-        resp.raise_for_status()
-        return {g["name"]: g["teams"] for g in resp.json()["groups"]}
+        return {g["name"]: g["teams"] for g in fetch("groups")["groups"]}
 
     @reactive.calc
     def all_games():
-        resp = requests.get(f"{BASE_URL}/get/games")
-        resp.raise_for_status()
-        return resp.json()["games"]
+        return fetch("games")["games"]
 
     def is_finished(game):
         return (
@@ -72,24 +84,30 @@ def server(input, output, session):
         rows = []
         for entry in entries:
             team = lookup.get(entry["team_id"], {})
-            rows.append({
-                "name": team.get("name_en", entry["team_id"]),
-                "flag": team.get("flag", ""),
-                "mp": int(entry["mp"]),
-                "w": int(entry["w"]),
-                "d": int(entry["d"]),
-                "l": int(entry["l"]),
-                "gf": int(entry["gf"]),
-                "ga": int(entry["ga"]),
-                "gd": int(entry["gd"]),
-                "pts": int(entry["pts"]),
-            })
+            rows.append(
+                {
+                    "name": team.get("name_en", entry["team_id"]),
+                    "flag": team.get("flag", ""),
+                    "mp": int(entry["mp"]),
+                    "w": int(entry["w"]),
+                    "d": int(entry["d"]),
+                    "l": int(entry["l"]),
+                    "gf": int(entry["gf"]),
+                    "ga": int(entry["ga"]),
+                    "gd": int(entry["gd"]),
+                    "pts": int(entry["pts"]),
+                }
+            )
         return sorted(rows, key=lambda r: (-r["pts"], -r["gd"], -r["gf"]))
 
     def build_standings_html(rows):
         table_rows = ""
         for i, row in enumerate(rows):
-            f = f'<img src="{row["flag"]}" height="16" style="vertical-align:middle;margin-right:6px">' if row["flag"] else ""
+            f = (
+                f'<img src="{row["flag"]}" height="16" style="vertical-align:middle;margin-right:6px">'
+                if row["flag"]
+                else ""
+            )
             gd = f"+{row['gd']}" if row["gd"] > 0 else str(row["gd"])
             table_rows += f"""
             <tr style="border-bottom:1px solid #eee">
@@ -170,8 +188,12 @@ def server(input, output, session):
             time_str = dt.strftime("%H:%M")
             home_id = game.get("home_team_id", "0")
             away_id = game.get("away_team_id", "0")
-            home_name = game.get("home_team_name_en") or game.get("home_team_label", "TBD")
-            away_name = game.get("away_team_name_en") or game.get("away_team_label", "TBD")
+            home_name = game.get("home_team_name_en") or game.get(
+                "home_team_label", "TBD"
+            )
+            away_name = game.get("away_team_name_en") or game.get(
+                "away_team_label", "TBD"
+            )
             home_f = team_flag_for_id(home_id, teams, 18)
             away_f = team_flag_for_id(away_id, teams, 18)
 
@@ -180,14 +202,18 @@ def server(input, output, session):
             live = not finished and elapsed not in ("notstarted", "")
 
             if finished:
-                center = f'<strong>{game["home_score"]} – {game["away_score"]}</strong>'
+                center = f"<strong>{game['home_score']} – {game['away_score']}</strong>"
             elif live:
                 center = f'<span style="color:#c00;font-weight:bold">{game["time_elapsed"]}</span><br><small>{game["home_score"]} – {game["away_score"]}</small>'
             else:
                 center = f'<span style="color:#888">{time_str}</span>'
 
             phase = game.get("type", "")
-            context = f"Group {game['group']}" if phase == "group" else PHASE_LABELS.get(phase, phase.upper())
+            context = (
+                f"Group {game['group']}"
+                if phase == "group"
+                else PHASE_LABELS.get(phase, phase.upper())
+            )
 
             text_color = "#bbb" if greyed else "#222"
             return (
@@ -197,7 +223,7 @@ def server(input, output, session):
                 f'  <div style="width:90px;text-align:center;font-size:0.95em">{center}</div>'
                 f'  <div style="flex:1;padding-left:16px">{away_f}{away_name}</div>'
                 f'  <div style="width:80px;text-align:right;font-size:0.8em;color:#aaa">{context}</div>'
-                f'</div>'
+                f"</div>"
             )
 
         sections = [
@@ -208,13 +234,19 @@ def server(input, output, session):
         content = []
         for key, label, greyed in sections:
             h_color = "#aaa" if greyed else "#222"
-            content.append(ui.HTML(f'<h4 style="margin-top:24px;margin-bottom:4px;color:{h_color}">{label}</h4>'))
+            content.append(
+                ui.HTML(
+                    f'<h4 style="margin-top:24px;margin-bottom:4px;color:{h_color}">{label}</h4>'
+                )
+            )
             day_matches = by_day[key]
             if day_matches:
                 rows_html = "".join(match_row(dt, g, greyed) for dt, g in day_matches)
-                content.append(ui.HTML(f'<div>{rows_html}</div>'))
+                content.append(ui.HTML(f"<div>{rows_html}</div>"))
             else:
-                content.append(ui.HTML(f'<p style="color:#ccc;font-style:italic">No matches</p>'))
+                content.append(
+                    ui.HTML(f'<p style="color:#ccc;font-style:italic">No matches</p>')
+                )
 
         return ui.div(*content, style="padding:16px;max-width:860px")
 
@@ -228,9 +260,7 @@ def server(input, output, session):
 
         # Group stage end note
         group_games = [g for g in games if g.get("type") == "group"]
-        group_end_dt = max(
-            parse_dt(g) for g in group_games if parse_dt(g) is not None
-        )
+        group_end_dt = max(parse_dt(g) for g in group_games if parse_dt(g) is not None)
         all_done = all(is_finished(g) for g in group_games)
         verb = "Ended" if all_done else "Ends"
         note = f"Group stage {verb} {group_end_dt.strftime('%B %d, %Y')}"
@@ -241,45 +271,56 @@ def server(input, output, session):
             rows = []
             for entry in entries:
                 team = teams_lookup.get(entry["team_id"], {})
-                rows.append({
-                    "name": team.get("name_en", entry["team_id"]),
-                    "flag": team.get("flag", ""),
-                    "pts": int(entry["pts"]),
-                    "gd": int(entry["gd"]),
-                    "gf": int(entry["gf"]),
-                })
+                rows.append(
+                    {
+                        "name": team.get("name_en", entry["team_id"]),
+                        "flag": team.get("flag", ""),
+                        "pts": int(entry["pts"]),
+                        "gd": int(entry["gd"]),
+                        "gf": int(entry["gf"]),
+                    }
+                )
             rows = sorted(rows, key=lambda r: (-r["pts"], -r["gd"], -r["gf"]))
 
             winner = rows[0] if rows else None
             others = rows[1:] if len(rows) > 1 else []
 
             if winner:
-                w_flag = f'<img src="{winner["flag"]}" height="22" style="vertical-align:middle;margin-right:8px">' if winner["flag"] else ""
+                w_flag = (
+                    f'<img src="{winner["flag"]}" height="22" style="vertical-align:middle;margin-right:8px">'
+                    if winner["flag"]
+                    else ""
+                )
                 winner_html = (
                     f'<div style="font-size:1.05em;font-weight:bold;margin-bottom:10px">'
-                    f'{w_flag}{winner["name"]}'
+                    f"{w_flag}{winner['name']}"
                     f'<span style="color:#666;font-weight:normal;font-size:0.85em;margin-left:6px">({winner["pts"]} pts)</span>'
-                    f'</div>'
+                    f"</div>"
                 )
             else:
                 winner_html = ""
 
             others_parts = []
             for team in others:
-                t_flag = f'<img src="{team["flag"]}" height="14" style="vertical-align:middle;margin-right:4px">' if team["flag"] else ""
+                t_flag = (
+                    f'<img src="{team["flag"]}" height="14" style="vertical-align:middle;margin-right:4px">'
+                    if team["flag"]
+                    else ""
+                )
                 others_parts.append(
                     f'<span style="margin-right:12px;font-size:0.88em">'
-                    f'{t_flag}{team["name"]}'
+                    f"{t_flag}{team['name']}"
                     f'<span style="color:#888;margin-left:4px">({team["pts"]})</span>'
-                    f'</span>'
+                    f"</span>"
                 )
-            others_html = f'<div>{"".join(others_parts)}</div>'
+            others_html = f"<div>{''.join(others_parts)}</div>"
 
             card = ui.card(
                 ui.card_header(f"Group {grp}"),
                 ui.HTML(winner_html + others_html),
                 ui.input_action_button(
-                    f"view_{grp}", "Details",
+                    f"view_{grp}",
+                    "Details",
                     class_="btn btn-sm btn-outline-secondary mt-2",
                 ),
             )
@@ -287,7 +328,7 @@ def server(input, output, session):
 
         grid_rows = []
         for i in range(0, len(all_cards), 3):
-            chunk = all_cards[i:i + 3]
+            chunk = all_cards[i : i + 3]
             grid_rows.append(ui.layout_columns(*chunk, col_widths=[4] * len(chunk)))
 
         return ui.div(
@@ -320,18 +361,28 @@ def server(input, output, session):
             table_rows = ""
             for game in phases[phase_type]:
                 dt = parse_dt(game)
-                date_fmt = dt.strftime("%b %d · %H:%M") if dt else game.get("local_date", "TBD")
+                date_fmt = (
+                    dt.strftime("%b %d · %H:%M")
+                    if dt
+                    else game.get("local_date", "TBD")
+                )
 
                 home_id = game.get("home_team_id", "0")
                 away_id = game.get("away_team_id", "0")
-                home_name = game.get("home_team_name_en") or game.get("home_team_label", "TBD")
-                away_name = game.get("away_team_name_en") or game.get("away_team_label", "TBD")
+                home_name = game.get("home_team_name_en") or game.get(
+                    "home_team_label", "TBD"
+                )
+                away_name = game.get("away_team_name_en") or game.get(
+                    "away_team_label", "TBD"
+                )
                 home_f = team_flag_for_id(home_id, teams, 14)
                 away_f = team_flag_for_id(away_id, teams, 14)
 
                 finished = is_finished(game)
                 if finished:
-                    score = f'<strong>{game["home_score"]} – {game["away_score"]}</strong>'
+                    score = (
+                        f"<strong>{game['home_score']} – {game['away_score']}</strong>"
+                    )
                     score_style = ""
                 else:
                     score = "vs"
@@ -355,7 +406,8 @@ def server(input, output, session):
                     <td style="padding:8px;color:#aaa;font-size:0.82em;white-space:nowrap">{context}</td>
                 </tr>"""
 
-            content.append(ui.HTML(f"""
+            content.append(
+                ui.HTML(f"""
             <table style="width:100%;border-collapse:collapse;margin-bottom:8px">
                 <thead>
                     <tr style="background:#f5f5f5;border-bottom:2px solid #ddd">
@@ -367,7 +419,8 @@ def server(input, output, session):
                     </tr>
                 </thead>
                 <tbody>{table_rows}</tbody>
-            </table>"""))
+            </table>""")
+            )
 
         return ui.div(*content, style="padding:16px")
 
