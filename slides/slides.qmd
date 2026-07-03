@@ -38,7 +38,6 @@ You can't validate what Claude is producing if you have no foundational knowledg
 - Claude catches syntax, but **you** catch architecture
 - Claude writes fast, but **you** know what's actually possible
 - Claude tends to overshoot, but **you** know how to simplify
-. . .
 
 > The goal isn't to write every line yourself.
 > The goal is to **know enough to steer**.
@@ -345,8 +344,7 @@ Open Positron (or another IDE). We're starting from a blank file.
 ```
 app/
 ├── basic.py      ← we build this together
-├── polished.py   ← brand.yml, custom CSS, pitch background
-└── _brand.yml    ← shared with these slides
+└── polished.py   ← brand.yml, custom CSS, pitch background
 ```
 
 You can check everything on GitHub: hypebright/kickoff-with-shiny-for-python
