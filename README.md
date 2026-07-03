@@ -105,6 +105,13 @@ The slides for the session are in `slides/slides.qmd`. Render them with:
 ```bash
 quarto render slides/slides.qmd
 ```
+---
+
+## Step-by-step walkthrough
+
+In the `teaching-steps` folder you can find 7 "in-progress" files. Each file represents a step, and in 7 steps you can build the basic app step by step. Every new piece of code is commented so you can learn as you go. 
+
+Nobody starts with a complete app (unless you let an LLM handle everything 😉). You start small with a skeleton and build it out. A first API call, a first table, a card, more cards, more details, some CSS tweaks... If you follow the steps it will all be less overwhelming, especially when you're just getting started with programming!
 
 ---
 
