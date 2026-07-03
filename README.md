@@ -111,3 +111,5 @@ quarto render slides/slides.qmd
 Built with [Shiny for Python](https://shiny.posit.co/py/) ⚽️.
 
 Want to build more like this? Check out the [AthlyticZ membership](https://athlyticz.com/masterclass?am_id=veerle1180).
+
+Curious to see the schedule first? Head over to [AthlyticZ scoreboard](https://athlyticz-scoreboard.web.app/guide) 😎.
