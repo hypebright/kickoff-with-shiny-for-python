@@ -15,6 +15,10 @@ format:
     code-block-height: 400px
     slide-number: true
     footer: "Kick Off with Shiny for Python"
+    title-slide-attributes:
+      data-background-image: "images/network-bg.svg"
+      data-background-size: "cover"
+      data-background-position: "center"
 ---
 
 ## Why are we still here? {.center}
@@ -49,6 +53,89 @@ You can't validate what Claude is producing if you have no foundational knowledg
 | **Dash** | Explicit callback decorators linking inputs to outputs | Analytical dashboards, Plotly-heavy apps |
 | **Gradio** | Event-driven, limited layout control | ML model demos |
 | **Shiny** | Fine-grained: only what changed reruns | Production apps, complex state |
+
+---
+
+## Same "hello, name" app, four ways {.center}
+
+Hello, you!
+
+---
+
+## Streamlit
+
+```python
+import streamlit as st
+
+name = st.selectbox("Pick a name", ["Ada", "Grace", "Alan"])
+st.write(f"Hello, {name}!")
+```
+
+Reruns the whole script top-to-bottom every time the picker changes.
+
+---
+
+## Dash
+
+```python
+from dash import Dash, html, dcc, Input, Output
+
+app = Dash(__name__)
+app.layout = html.Div([
+    dcc.Dropdown(["Ada", "Grace", "Alan"], id="name"),
+    html.Div(id="greeting"),
+])
+
+@app.callback(Output("greeting", "children"), Input("name", "value"))
+def greet(name):
+    return f"Hello, {name}!"
+
+if __name__ == "__main__":
+    app.run(debug=True)
+```
+
+Layout and logic wired together explicitly through `Input`/`Output` callbacks.
+
+---
+
+## Gradio
+
+```python
+import gradio as gr
+
+def greet(name):
+    return f"Hello, {name}!"
+
+gr.Interface(
+    fn=greet,
+    inputs=gr.Dropdown(["Ada", "Grace", "Alan"]),
+    outputs="text",
+).launch()
+```
+
+One function, wrapped in an `Interface`. Built for ML demos, not custom layouts.
+
+---
+
+## Shiny
+
+```python
+from shiny import App, ui, render
+
+app_ui = ui.page_fluid(
+    ui.input_select("name", "Pick a name", ["Ada", "Grace", "Alan"]),
+    ui.output_text("greeting"),
+)
+
+def server(input, output, session):
+    @render.text
+    def greeting():
+        return f"Hello, {input.name()}!"
+
+app = App(app_ui, server)
+```
+
+Explicit UI/server split, but only the `greeting` output reruns when `name` changes.
 
 ---
 

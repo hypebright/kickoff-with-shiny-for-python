@@ -6,6 +6,11 @@ $link-color: #178FA0;
 $code-color: #178FA0;
 $border-color: #E5DFD3;
 
+// brand.yml's typography.base.size (16px, meant for regular web pages) overrides
+// revealjs's own root font size, which needs to stay large since slides are
+// scaled as a fixed 960x700 viewport. Restore revealjs's own default here.
+$presentation-font-size-root: 40px;
+
 /*-- scss:rules --*/
 
 // ── Background ────────────────────────────────────────────────────────────────
